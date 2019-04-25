@@ -42,7 +42,8 @@ defmodule DistilleryExample.MixProject do
       {:phoenix_live_reload, "~> 1.2", only: :dev},
       {:gettext, "~> 0.11"},
       {:jason, "~> 1.0"},
-      {:plug_cowboy, "~> 2.0"}
+      {:plug_cowboy, "~> 2.0"},
+      {:distillery, "~> 2.0"},
     ]
   end
 
@@ -52,11 +53,30 @@ defmodule DistilleryExample.MixProject do
   #     $ mix ecto.setup
   #
   # See the documentation for `Mix` for more info on aliases.
-  defp aliases do
+defp aliases do
     [
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
-      test: ["ecto.create --quiet", "ecto.migrate", "test"]
+      test: ["ecto.create --quiet", "ecto.migrate", "test"],
+      compile: ["compile", &compile_assets/1],
+      clean: ["clean", &clean_assets/1]
     ]
+  end
+
+  defp compile_assets(_args) do
+    assets_dir = Path.join([Application.app_dir(:distillery_example, "priv"), "..", "assets"])
+    static_dir = Path.join(Application.app_dir(:distillery_example, "priv"), "static")
+    File.mkdir_p!(Path.join(static_dir, "js"))
+    File.mkdir_p!(Path.join(static_dir, "css"))
+    for item <- ["js", "css", "favicon.ico", "robots.txt"] do
+      File.cp_r!(Path.join(assets_dir, item), Path.join(static_dir, item))
+    end
+  end
+
+  defp clean_assets(_args) do
+    static_dir = Path.join(Application.app_dir(:distillery_example, "priv"), "static")
+    for item <- ["js", "css", "favicon.ico", "robots.txt"] do
+      File.rm_rf!(Path.join(static_dir, item))
+    end
   end
 end
